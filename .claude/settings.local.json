@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\70350532\\\\Prosjekter\\\\WMViewer\" -Recurse -Depth 3)",
+      "Bash(Select-Object FullName)",
+      "Bash(grep -E \"\\\\.\\(csproj|cs\\)$\")",
+      "Bash(grep -E \"\\\\.cs$\")"
+    ]
+  }
+}

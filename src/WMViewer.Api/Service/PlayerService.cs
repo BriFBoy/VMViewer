@@ -1,0 +1,49 @@
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using VMViewer.Controllers;
+using VMViewer.Model;
+using VMViewer.Repository;
+
+namespace VMViewer.Service;
+
+public class PlayerService(IPlayerRepository playerRepository): IPlayerService
+{
+    public (Player?, ServiceStatus) GetPlayer(int id)
+    {
+        if (id <= 0) return (null, ServiceStatus.Invaild);
+
+        var player = playerRepository.GetById(id);
+        return player is not null ? (player, ServiceStatus.Normal) : (null, ServiceStatus.NotFound);
+    }
+
+    public (Player?, ServiceStatus) AddPlayer(string name, int age, int teamid)
+    {
+        var newPlayer = new Player(null, name, age, teamid);
+
+        var (player, status) = playerRepository.AddPlayer(newPlayer);
+
+        return status switch
+        {
+            SaveStatus.AlreadyExists => (null, ServiceStatus.Exists),
+            SaveStatus.ErrorOccured => (null, ServiceStatus.Error),
+            SaveStatus.Created => (player, ServiceStatus.Normal),
+            _ => (null, ServiceStatus.Error)
+        };
+    }
+
+    public ServiceStatus DeletePlayer(int playerid)
+    {
+        if (playerid <= 0)
+        {
+            return ServiceStatus.Invaild;
+        }
+
+        var res = playerRepository.DeletePlayer(playerid);
+        return res switch
+        {
+            SaveStatus.NoEntries =>  ServiceStatus.NotFound,
+            SaveStatus.Deleted => ServiceStatus.Normal,
+            _ => ServiceStatus.Error
+        };
+    }
+}
