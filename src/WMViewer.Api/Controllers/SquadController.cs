@@ -20,5 +20,18 @@ public class SquadController(ISquadService squadService): ControllerBase
             _ => Problem()
         };
     }
+    [HttpPut]
+    [Route("transfer/{playerid:int}/{teamid:int}")]
+    public IActionResult TransferPlayer(int playerid, int teamid)
+    {
+        var (player, status) = squadService.Transfer(playerid, teamid);
+        return status switch
+        {
+            ServiceStatus.Normal => Ok(player),
+            ServiceStatus.NotFound => NoContent(),
+            ServiceStatus.Invaild => BadRequest("Team doesnt exist"),
+            _ => Problem()
+        };
+    }
     
 }

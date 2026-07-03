@@ -10,4 +10,5 @@ public interface ITeamRepository
     public (Team?, SaveStatus) SaveTeam(Team team);
     public SaveStatus DeleteTeam(int Id);
 
+    SaveStatus UpdateTeam(Team team);
 }

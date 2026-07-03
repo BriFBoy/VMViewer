@@ -66,5 +66,14 @@ public class PlayerRepository(NpgsqlConnection npgsqlConnection, ITeamRepository
     return squad.Count() == 0 ? (null, SaveStatus.NoEntries) : (squad.AsList(), SaveStatus.Normal);
   }
 
+  public (Player?, SaveStatus) MoveToTeamById(int teamid, int playerid)
+  {
+    const string sql = "UPDATE players SET teamid=@teamid WHERE playerid=@playerid";
 
+    var rowsupdates = npgsqlConnection.Execute(sql, new {teamid, playerid});
+    if (rowsupdates <= 0) return (null, SaveStatus.ErrorOccured);
+
+    var updatedplayer = npgsqlConnection.QuerySingleOrDefault<Player>("SELECT * FROM players WHERE playerid=@playerid", new { playerid });
+    return updatedplayer == null ? (null, SaveStatus.ErrorOccured) : (updatedplayer, SaveStatus.Normal);
+  }
 }

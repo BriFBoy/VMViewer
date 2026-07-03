@@ -13,4 +13,5 @@ public interface IPlayerRepository
   public SaveStatus DeletePlayer(int id);
 
   public (List<Player>?, SaveStatus) GetAllPlayersInSquad(int teamId);
+  (Player?, SaveStatus) MoveToTeamById(int teamid, int playerid);
 }

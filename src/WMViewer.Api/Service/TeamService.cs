@@ -19,7 +19,7 @@ public class TeamService(ITeamRepository teamRepository): ITeamService
             return (null, ServiceStatus.Invaild);
         }
     
-        var (team, status) =  teamRepository.SaveTeam(new Team(null, name));
+        var (team, status) =  teamRepository.SaveTeam(new Team(null, name, 0));
         return status switch
         {
             SaveStatus.AlreadyExists => (null, ServiceStatus.Exists),
@@ -42,4 +42,6 @@ public class TeamService(ITeamRepository teamRepository): ITeamService
             _ => ServiceStatus.Error,
         };
     }
+
+
 }

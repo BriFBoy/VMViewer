@@ -8,7 +8,7 @@ namespace VMViewer.Service;
 
 public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository): IPlayerService
 {
-    private const int MaxSquadSize = 25;
+    
     
     public (Player?, ServiceStatus) GetPlayer(int id)
     {
@@ -27,7 +27,7 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
         var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
         if (getstatus != SaveStatus.Normal || players == null) return (null, ServiceStatus.Error);
 
-        if ( players.Count >= MaxSquadSize) return (null, ServiceStatus.TooMany);
+        if ( players.Count >= Team.MaxSquadSize) return (null, ServiceStatus.TooMany);
         
         
         var newPlayer = new Player(null, name, age, teamid);
