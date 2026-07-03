@@ -51,6 +51,19 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<ConflictObjectResult>(actionResult);
     }
+    [Test]
+    public void AddPlayerTest_WithFullSquad_ReturnsConflict()
+    {
+        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var playerservice = Substitute.For<IPlayerService>();
+        playerservice.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.TooMany));
+        var playerController = new PlayerController(playerservice);
+        var request = new PlayerController.CreateRequest(player.Age, player.Name, player.TeamId);
+
+        var actionResult = playerController.AddPlayer(request);
+
+        Assert.IsInstanceOf<ConflictObjectResult>(actionResult);
+    }
     
     [Test]
     public void DeletePlayer_WithInvalidId_ReturnsNotFound()

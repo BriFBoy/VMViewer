@@ -9,4 +9,4 @@ procs:
       postgres:16
   web:
     shell: >
-      dotnet run
+      dotnet run --project ./src/WMViewer.Api

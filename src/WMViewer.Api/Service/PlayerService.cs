@@ -6,8 +6,10 @@ using VMViewer.Repository;
 
 namespace VMViewer.Service;
 
-public class PlayerService(IPlayerRepository playerRepository): IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository): IPlayerService
 {
+    private const int MaxSquadSize = 25;
+    
     public (Player?, ServiceStatus) GetPlayer(int id)
     {
         if (id <= 0) return (null, ServiceStatus.Invaild);
@@ -18,8 +20,17 @@ public class PlayerService(IPlayerRepository playerRepository): IPlayerService
 
     public (Player?, ServiceStatus) AddPlayer(string name, int age, int teamid)
     {
-        var newPlayer = new Player(null, name, age, teamid);
+        
+        if (!teamRepository.DoTeamExistsWithId(teamid)) return (null, ServiceStatus.Invaild);
+        if (playerRepository.DoPlayerExistsWithName(name)) return (null, ServiceStatus.Exists);
+        
+        var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
+        if (getstatus != SaveStatus.Normal || players == null) return (null, ServiceStatus.Error);
 
+        if ( players.Count >= MaxSquadSize) return (null, ServiceStatus.TooMany);
+        
+        
+        var newPlayer = new Player(null, name, age, teamid);
         var (player, status) = playerRepository.AddPlayer(newPlayer);
 
         return status switch

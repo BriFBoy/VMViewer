@@ -6,5 +6,6 @@ public enum ServiceStatus
     Invaild,
     NotFound,
     Exists,
-    Error
+    Error,
+    TooMany
 }

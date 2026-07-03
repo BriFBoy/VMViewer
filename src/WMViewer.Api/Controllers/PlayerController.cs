@@ -36,7 +36,8 @@ public class PlayerController(IPlayerService playerService) : ControllerBase
     {
       ServiceStatus.Normal => CreatedAtAction( nameof(AddPlayer), player),
       ServiceStatus.Invaild => BadRequest("Team does not exists"),
-      ServiceStatus.Exists => Conflict("Player aleady exists"),
+      ServiceStatus.Exists => Conflict("Player already exists"),
+      ServiceStatus.TooMany => Conflict("Too many players in squad"),
       _ => Problem(),
     };
   }
