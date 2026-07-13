@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using VMViewer.Controllers;
-using VMViewer.Model;
+﻿using VMViewer.Model;
 using VMViewer.Repository;
 
 namespace VMViewer.Service;

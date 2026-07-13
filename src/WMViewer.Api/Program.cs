@@ -1,30 +1,31 @@
-
 using FluentMigrator.Runner;
 using Npgsql;
 using VMViewer.Migrations;
 using VMViewer.Repository;
 using VMViewer.Service;
 
-public class Program
+namespace VMViewer;
+
+public abstract class Program
 {
   private static readonly string ConnectionString;
 
   static Program()
   {
     DotNetEnv.Env.Load();
-    var connection_string = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-    if (connection_string == null)
+    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+    if (connectionString == null)
     {
       Console.WriteLine("Connection String null");
       Environment.Exit(1);
     }
-    ConnectionString = connection_string;
+    Console.WriteLine(connectionString);
+    ConnectionString = connectionString;
 
   }
 
 
-
-  static void Main(string[] args)
+  private static void Main(string[] args)
   {
 
     var builder = WebApplication.CreateBuilder(args);
@@ -37,10 +38,10 @@ public class Program
     builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
 
     builder.Services.AddFluentMigratorCore().ConfigureRunner(rb => rb
-    .AddPostgres()
-    .WithGlobalConnectionString(ConnectionString)
-    .ScanIn(typeof(CreateTables).Assembly)
-    .For.All()).AddLogging(lb => lb.AddFluentMigratorConsole());
+      .AddPostgres()
+      .WithGlobalConnectionString(ConnectionString)
+      .ScanIn(typeof(CreateTables).Assembly)
+      .For.All()).AddLogging(lb => lb.AddFluentMigratorConsole());
 
 
     var app = builder.Build();
