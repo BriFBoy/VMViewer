@@ -9,11 +9,12 @@ namespace WMViewer.Api.Tests.Repository;
 public class TeamRepositoryTests
 {
     private ITeamRepository teamRepository = Substitute.For<ITeamRepository>();
+    private IPlayerRepository _playerRepository = Substitute.For<IPlayerRepository>();
     [SetUp]
     public void SetUp()
     {
         const string name = "";
-        teamRepository.SaveTeam(Arg.Any<Team>()).Returns((new Team(1, name), SaveStatus.Created));
+        teamRepository.SaveTeam(Arg.Any<Team>()).Returns((new Team(1, name, 0, null), SaveStatus.Created));
     }
 
     [TearDown]
@@ -27,7 +28,7 @@ public class TeamRepositoryTests
     public void AddTeam_WithInvalidName_ReturnsInvalid()
     {
         const string name = "";
-        var teamService = new TeamService(teamRepository);
+        var teamService = new TeamService(teamRepository, _playerRepository);
 
      
         
@@ -43,7 +44,7 @@ public class TeamRepositoryTests
     public void AddTeam_WithVaildName_ReturnsNormal()
     {
         var name = "Norway";
-        var TeamService = new TeamService(teamRepository);
+        var TeamService = new TeamService(teamRepository, _playerRepository);
         
 
         

@@ -13,7 +13,7 @@ public class PlayerControllerTests
     [Test]
     public void AddPlayerTest_WithInvalidTeamId_ReturnsBadRequest()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 0);
+        var player = new Player(1, "Martin Ødegaard", 25, 0, false);
         var playerservice = Substitute.For<IPlayerService>();
         playerservice.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Invaild));
         var playerController = new PlayerController(playerservice);
@@ -27,7 +27,7 @@ public class PlayerControllerTests
     [Test]
     public void AddPlayerTest_WithValidPlayer_ReturnsCreatedInAction()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
         var playerservice = Substitute.For<IPlayerService>();
         playerservice.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Normal));
         var playerController = new PlayerController(playerservice);
@@ -41,7 +41,7 @@ public class PlayerControllerTests
     [Test]
     public void AddPlayerTest_WithExistingPlayer_ReturnsConflict()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
         var playerservice = Substitute.For<IPlayerService>();
         playerservice.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Exists));
         var playerController = new PlayerController(playerservice);
@@ -54,7 +54,7 @@ public class PlayerControllerTests
     [Test]
     public void AddPlayerTest_WithFullSquad_ReturnsConflict()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
         var playerservice = Substitute.For<IPlayerService>();
         playerservice.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.TooMany));
         var playerController = new PlayerController(playerservice);
@@ -94,7 +94,7 @@ public class PlayerControllerTests
     [Test]
     public void GetPlayer_WithValidId_ReturnsOk()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
         var playerService = Substitute.For<IPlayerService>();
         playerService.GetPlayer((int)player.PlayerId!).Returns((player, ServiceStatus.Normal));
         var playerController = new PlayerController(playerService);
@@ -108,7 +108,7 @@ public class PlayerControllerTests
     [Test]
     public void GetPlayer_WithInvalidId_ReturnsBadRequest()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
         var playerService = Substitute.For<IPlayerService>();
         playerService.GetPlayer((int)player.PlayerId!).Returns((player, ServiceStatus.Invaild));
         var playerController = new PlayerController(playerService);

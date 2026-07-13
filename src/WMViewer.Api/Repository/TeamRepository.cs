@@ -57,9 +57,9 @@ public class TeamRepository(NpgsqlConnection npgsqlConnection) : ITeamRepository
 
     public SaveStatus UpdateTeam(Team team)
     {
-        const string sql = "UPDATE teams SET numberofplayers=@numberofplayers, name=@name WHERE teamid=@teamid";
+        const string sql = "UPDATE teams SET numberofplayers=@numberofplayers, name=@name, captain=@captain WHERE teamid=@teamid";
 
-        var rowsupdated = npgsqlConnection.Execute(sql, new { team.NumberOfPlayers, team.Name, team.TeamId });
+        var rowsupdated = npgsqlConnection.Execute(sql, new { team.NumberOfPlayers, team.Name, team.TeamId, team.Captain });
         return (rowsupdated >= 0) ? SaveStatus.Normal : SaveStatus.ErrorOccured;
     }
 }

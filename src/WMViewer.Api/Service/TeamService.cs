@@ -3,7 +3,7 @@ using VMViewer.Repository;
 
 namespace VMViewer.Service;
 
-public class TeamService(ITeamRepository teamRepository): ITeamService
+public class TeamService(ITeamRepository teamRepository, IPlayerRepository playerRepository): ITeamService
 {
     
     
@@ -19,7 +19,7 @@ public class TeamService(ITeamRepository teamRepository): ITeamService
             return (null, ServiceStatus.Invaild);
         }
     
-        var (team, status) =  teamRepository.SaveTeam(new Team(null, name, 0));
+        var (team, status) =  teamRepository.SaveTeam(new Team(null, name, 0, null));
         return status switch
         {
             SaveStatus.AlreadyExists => (null, ServiceStatus.Exists),
@@ -43,5 +43,22 @@ public class TeamService(ITeamRepository teamRepository): ITeamService
         };
     }
 
+    public (Player? player, ServiceStatus status) MakeCaptain(int teamid, int playerid)
+    {
+        if (teamid <= 0 || playerid <= 0) return (null, ServiceStatus.Invaild);
+        
+        var player = playerRepository.GetById(playerid);
+        if (player == null) return (null, ServiceStatus.Invaild);
 
+        var team = teamRepository.GetByID(teamid);
+        if (team == null) return (null, ServiceStatus.Invaild);
+
+        team.Captain = playerid;
+        player.IsCaptain = true;
+        if (teamRepository.UpdateTeam(team) == SaveStatus.ErrorOccured ||
+            playerRepository.UpdatePlayer(player) == SaveStatus.ErrorOccured)
+            return (null, ServiceStatus.Error);
+
+        return (player, ServiceStatus.Normal);
+    }
 }

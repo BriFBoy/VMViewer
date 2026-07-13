@@ -76,4 +76,12 @@ public class PlayerRepository(NpgsqlConnection npgsqlConnection, ITeamRepository
     var updatedplayer = npgsqlConnection.QuerySingleOrDefault<Player>("SELECT * FROM players WHERE playerid=@playerid", new { playerid });
     return updatedplayer == null ? (null, SaveStatus.ErrorOccured) : (updatedplayer, SaveStatus.Normal);
   }
+
+  public SaveStatus UpdatePlayer(Player player)
+  {
+    const string sql = "UPDATE players SET name=@name, age=@age, teamid=@teamid, iscaptain=@iscaptain WHERE playerid=@playerid";
+
+    var rowsupdated = npgsqlConnection.Execute(sql, new { player.Name, player.Age, player.TeamId, player.IsCaptain, player.PlayerId });
+    return (rowsupdated <= 0)  ? SaveStatus.ErrorOccured : SaveStatus.Normal;
+  }
 }

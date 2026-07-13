@@ -20,12 +20,20 @@ public class SquadService(IPlayerRepository playerRepository, ITeamRepository te
     {
         var team = teamRepository.GetByID(teamid);
         if (team == null) return (null, ServiceStatus.Invaild);
-        if (team.NumberOfPlayers >= Team.MaxSquadSize) return (null, ServiceStatus.TooMany);
+        if (team.NumberOfPlayers >= Team.MAXSQUADSIZE) return (null, ServiceStatus.TooMany);
+        
+        var (player, status) = playerRepository.MoveToTeamById(teamid, playerid);
+        if (player == null) return (null, ServiceStatus.Error);
         
         team.AddPlayerToTeam();
         teamRepository.UpdateTeam(team);
-
-        var (player, status) = playerRepository.MoveToTeamById(teamid, playerid);
+        
+        var oldteam = teamRepository.GetByID(player.TeamId);
+        if (oldteam == null) return (null, ServiceStatus.Error);
+        
+        oldteam.RemovePlayerToTeam();
+        teamRepository.UpdateTeam(oldteam);
+        
         return status switch
         {
             SaveStatus.Normal => (player, ServiceStatus.Normal),

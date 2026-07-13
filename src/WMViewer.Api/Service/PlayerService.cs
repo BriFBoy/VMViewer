@@ -6,10 +6,8 @@ using VMViewer.Repository;
 
 namespace VMViewer.Service;
 
-public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository): IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository) : IPlayerService
 {
-    
-    
     public (Player?, ServiceStatus) GetPlayer(int id)
     {
         if (id <= 0) return (null, ServiceStatus.Invaild);
@@ -20,17 +18,19 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
 
     public (Player?, ServiceStatus) AddPlayer(string name, int age, int teamid)
     {
-        
         if (!teamRepository.DoTeamExistsWithId(teamid)) return (null, ServiceStatus.Invaild);
         if (playerRepository.DoPlayerExistsWithName(name)) return (null, ServiceStatus.Exists);
-        
-        var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
-        if (getstatus != SaveStatus.Normal || players == null) return (null, ServiceStatus.Error);
 
-        if ( players.Count >= Team.MaxSquadSize) return (null, ServiceStatus.TooMany);
-        
-        
-        var newPlayer = new Player(null, name, age, teamid);
+        var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
+        if (getstatus != SaveStatus.Normal && getstatus != SaveStatus.NoEntries) return (null, ServiceStatus.Error);
+
+        if (players is not null)
+        {
+            if (players.Count >= Team.MAXSQUADSIZE) return (null, ServiceStatus.TooMany);
+        }
+
+
+        var newPlayer = new Player(null, name, age, teamid, false);
         var (player, status) = playerRepository.AddPlayer(newPlayer);
 
         return status switch
@@ -52,7 +52,7 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
         var res = playerRepository.DeletePlayer(playerid);
         return res switch
         {
-            SaveStatus.NoEntries =>  ServiceStatus.NotFound,
+            SaveStatus.NoEntries => ServiceStatus.NotFound,
             SaveStatus.Deleted => ServiceStatus.Normal,
             _ => ServiceStatus.Error
         };

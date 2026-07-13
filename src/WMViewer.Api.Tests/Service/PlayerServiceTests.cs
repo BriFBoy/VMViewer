@@ -12,7 +12,7 @@ public class PlayerServiceTests
     [Test]
     public void AddPlayer_withValidPlayer_ReturnsCreated()
     {
-        var player = new Player(1, "Name", 22, 1);
+        var player = new Player(1, "Name", 22, 1, false);
         var playerRepository = Substitute.For<IPlayerRepository>();
         var teamRepository = Substitute.For<ITeamRepository>();
         playerRepository.AddPlayer(Arg.Any<Player>()).Returns((player, SaveStatus.Created));
@@ -28,7 +28,7 @@ public class PlayerServiceTests
     [Test]
     public void AddPlayer_WithDataBaseFail_ReturnsError()
     {
-        var player = new Player(1, "Name", 22, 1);
+        var player = new Player(1, "Name", 22, 1, false);
         var playerRepository = Substitute.For<IPlayerRepository>();
         var teamRepository = Substitute.For<ITeamRepository>();
         playerRepository.AddPlayer(Arg.Any<Player>()).Returns((null, SaveStatus.ErrorOccured));
@@ -43,7 +43,7 @@ public class PlayerServiceTests
     [Test]
     public void AddPlayer_WithFullSquad_ReturnsTooMany()
     {
-        var player = new Player(1, "Name", 22, 1);
+        var player = new Player(1, "Name", 22, 1, false);
         var playerRepository = Substitute.For<IPlayerRepository>();
         var teamRepository = Substitute.For<ITeamRepository>();
         playerRepository.AddPlayer(Arg.Any<Player>()).Returns((player, SaveStatus.Normal));
@@ -60,7 +60,7 @@ public class PlayerServiceTests
     [Test]
     public void AddPlayer_WithInvalidTeam_ReturnsInvalid()
     {
-        var player = new Player(1, "Name", 22, 1);
+        var player = new Player(1, "Name", 22, 1, false);
         var playerRepository = Substitute.For<IPlayerRepository>();
         var teamRepository = Substitute.For<ITeamRepository>();
         playerRepository.AddPlayer(Arg.Any<Player>()).Returns((player, SaveStatus.Normal));
