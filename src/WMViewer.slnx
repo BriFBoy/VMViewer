@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="WMViewer.Api/WMViewer.Api.csproj" Type="fae04ec0-301f-11d3-bf4b-0000f0fde910" />
   <Project Path="WMViewer.Api.Tests/WMViewer.Api.Tests.csproj" Type="fae04ec0-301f-11d3-bf4b-0000f0fde910" />
+  <Project Path="WMViewer.AppHost/WMViewer.AppHost.csproj" />
+  <Project Path="WMViewer.ServiceDefaults/WMViewer.ServiceDefaults.csproj" />
 </Solution>

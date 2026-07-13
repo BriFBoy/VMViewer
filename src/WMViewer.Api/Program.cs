@@ -13,7 +13,7 @@ public abstract class Program
   static Program()
   {
     DotNetEnv.Env.Load();
-    var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+    var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__postgres");
     if (connectionString == null)
     {
       Console.WriteLine("Connection String null");
@@ -29,6 +29,9 @@ public abstract class Program
   {
 
     var builder = WebApplication.CreateBuilder(args);
+    builder.AddServiceDefaults();
+    builder.Services.AddOpenTelemetry();
+    
     builder.Services.AddControllers();
     builder.Services.AddTransient(_ => new NpgsqlConnection(ConnectionString));
     builder.Services.AddSingleton<ISquadService, SquadService>();
@@ -45,6 +48,7 @@ public abstract class Program
 
 
     var app = builder.Build();
+    app.MapDefaultEndpoints();
     app.MapControllers();
 
     using (var runner = app.Services.CreateScope())
