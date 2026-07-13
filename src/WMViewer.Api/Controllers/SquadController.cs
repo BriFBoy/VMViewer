@@ -6,7 +6,7 @@ namespace VMViewer.Controllers;
 
 [ApiController]
 [Route("squad")]
-public class SquadController(ISquadService squadService): ControllerBase
+public class SquadController(ISquadService squadService, ILogger<SquadController> logger) : ControllerBase
 {
     [HttpGet]
     [Route("{Id:int}")]
@@ -20,18 +20,22 @@ public class SquadController(ISquadService squadService): ControllerBase
             _ => Problem()
         };
     }
+
     [HttpPut]
     [Route("transfer/{playerid:int}/{teamid:int}")]
     public IActionResult TransferPlayer(int playerid, int teamid)
     {
         var (player, status) = squadService.Transfer(playerid, teamid);
-        return status switch
+        switch (status)
         {
-            ServiceStatus.Normal => Ok(player),
-            ServiceStatus.NotFound => NoContent(),
-            ServiceStatus.Invaild => BadRequest("Team doesnt exist"),
-            _ => Problem()
-        };
+            case ServiceStatus.Normal:
+                logger.LogInformation("Transfered player with id {playerid} to team with id {teamid}", playerid, teamid);
+                return Ok(player);
+            case ServiceStatus.NotFound:
+                return NoContent();
+            case ServiceStatus.Invaild:
+                return BadRequest("Team doesnt exist");
+            default: return Problem();
+        }
     }
-    
 }

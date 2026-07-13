@@ -30,8 +30,7 @@ public abstract class Program
 
     var builder = WebApplication.CreateBuilder(args);
     builder.AddServiceDefaults();
-    builder.Services.AddOpenTelemetry();
-    
+
     builder.Services.AddControllers();
     builder.Services.AddTransient(_ => new NpgsqlConnection(ConnectionString));
     builder.Services.AddSingleton<ISquadService, SquadService>();

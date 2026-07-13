@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using VMViewer.Model;
-using VMViewer.Repository;
 using VMViewer.Service;
 
 namespace VMViewer.Controllers;
 
 [ApiController]
 [Route("team")]
-public class TeamController(ITeamService teamService) : ControllerBase
+public class TeamController(ITeamService teamService, ILogger<TeamController> logger) : ControllerBase
 {
     [Route("{id:int}")]
     public ActionResult<Team> GetTeam(int Id)
@@ -22,24 +20,31 @@ public class TeamController(ITeamService teamService) : ControllerBase
     public ActionResult<Team> AddTeam(TeamRequest request)
     {
         var (team, status) = teamService.AddTeam(request.Name);
-        return status switch
+        switch (status)
         {
-            ServiceStatus.Exists => Conflict("Already exists"),
-            ServiceStatus.Normal => CreatedAtAction("addteam", team),
-            _ => Problem()
-        };
+            case ServiceStatus.Exists:
+                return Conflict("Already exists");
+            case ServiceStatus.Normal:
+                logger.LogInformation("Created Team with id {teamid}", team.TeamId);
+                return CreatedAtAction("addteam", team);
+            default:
+                return Problem();
+        }
     }
 
     [HttpDelete]
     [Route("deleteteam/{Id:int}")]
     public IActionResult DeleteTeam(int Id)
     {
-        return teamService.DeleteTeam(Id) switch
+        switch (teamService.DeleteTeam(Id))
         {
-            ServiceStatus.NotFound => NoContent(),
-            ServiceStatus.Normal => Ok(),
-            _ => Problem()
-        };
+            case ServiceStatus.NotFound:
+                return NoContent();
+            case ServiceStatus.Normal:
+                logger.LogInformation("Deleted Team with id {teamid}", Id);
+                return Ok();
+            default: return Problem();
+        }
     }
 
     [HttpPut]
@@ -47,11 +52,11 @@ public class TeamController(ITeamService teamService) : ControllerBase
     public IActionResult MakeCaptain(int teamid, int playerid)
     {
         var (player, status) = teamService.MakeCaptain(teamid, playerid);
-        return status switch
+        switch (status)
         {
-            ServiceStatus.Normal => Ok(player),
-            _ => Problem()
-        };
+            case ServiceStatus.Normal: return Ok(player);
+            default: return Problem();
+        }
     }
 }
 
