@@ -43,7 +43,7 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
         }
         catch (NpgsqlException e)
         {
-            logger.LogError("Database failed when saving player");
+            logger.LogError("Database failed when saving player; Error: {e}", e);
             return (null, ServiceStatus.Error);
         }
     }

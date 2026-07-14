@@ -6,13 +6,13 @@ namespace VMViewer.Repository;
 
 public class TeamRepository(NpgsqlConnection npgsqlConnection) : ITeamRepository
 {
-    readonly NpgsqlConnection npgsqlConnection = npgsqlConnection;
+    readonly NpgsqlConnection _npgsqlConnection = npgsqlConnection;
 
-    public Team? GetByID(int Id)
+    public Team? GetByID(int id)
     {
         try
         {
-            return npgsqlConnection.QuerySingle<Team>("SELECT * FROM teams WHERE teamid=@Id", new { Id });
+            return _npgsqlConnection.QuerySingle<Team>("SELECT * FROM teams WHERE teamid=@Id", new { Id = id });
         }
         catch (Exception)
         {
@@ -20,38 +20,38 @@ public class TeamRepository(NpgsqlConnection npgsqlConnection) : ITeamRepository
         }
     }
 
-    public bool DoTeamExistsWithId(int Id)
+    public bool DoTeamExistsWithId(int id)
     {
-        return Id > 0 &&
-               npgsqlConnection.QuerySingle<bool>("SELECT EXISTS(SELECT 1 FROM teams WHERE teamid=@Id)", new { Id });
+        return id > 0 &&
+               _npgsqlConnection.QuerySingle<bool>("SELECT EXISTS(SELECT 1 FROM teams WHERE teamid=@Id)", new { Id = id });
     }
 
-    public bool DoTeamExistsWithName(string Name)
+    public bool DoTeamExistsWithName(string name)
     {
-        return npgsqlConnection.QuerySingle<bool>("SELECT EXISTS(SELECT 1 FROM teams WHERE name=@Name)", new { Name });
+        return _npgsqlConnection.QuerySingle<bool>("SELECT EXISTS(SELECT 1 FROM teams WHERE name=@Name)", new { Name = name });
     }
 
     public (Team?, SaveStatus) SaveTeam(Team team)
     {
         if (DoTeamExistsWithName(team.Name)) return (null, SaveStatus.AlreadyExists);
 
-        var result = npgsqlConnection
+        var result = _npgsqlConnection
             .QuerySingleAsync<Team>("INSERT INTO teams (name, numberofplayers) VALUES (@Name, @numberofplayers) RETURNING *", new { team.Name, team.NumberOfPlayers }).Result;
         return (result, SaveStatus.Created);
     }
 
-    public SaveStatus DeleteTeam(int Id)
+    public SaveStatus DeleteTeam(int id)
     {
-        if (!DoTeamExistsWithId(Id)) return SaveStatus.NoEntries;
+        if (!DoTeamExistsWithId(id)) return SaveStatus.NoEntries;
 
-        IEnumerable<int> playerIds =
-            npgsqlConnection.Query<int>("SELECT playerid FROM players WHERE teamid=@Id", new { Id });
+        var playerIds =
+            _npgsqlConnection.Query<int>("SELECT playerid FROM players WHERE teamid=@Id", new { Id = id });
         foreach (var playerid in playerIds)
         {
-            npgsqlConnection.Execute("DELETE FROM players WHERE playerid=@Id", new { Id = playerid });
+            _npgsqlConnection.Execute("DELETE FROM players WHERE playerid=@Id", new { Id = playerid });
         }
 
-        var res = npgsqlConnection.Execute("DELETE FROM teams WHERE teamid=@Id", new { Id });
+        var res = _npgsqlConnection.Execute("DELETE FROM teams WHERE teamid=@Id", new { Id = id });
         return res >= 1 ? SaveStatus.Deleted : SaveStatus.ErrorOccured;
     }
 
@@ -59,7 +59,7 @@ public class TeamRepository(NpgsqlConnection npgsqlConnection) : ITeamRepository
     {
         const string sql = "UPDATE teams SET numberofplayers=@numberofplayers, name=@name, captain=@captain WHERE teamid=@teamid";
 
-        var rowsupdated = npgsqlConnection.Execute(sql, new { team.NumberOfPlayers, team.Name, team.TeamId, team.Captain });
+        var rowsupdated = _npgsqlConnection.Execute(sql, new { team.NumberOfPlayers, team.Name, team.TeamId, team.Captain });
         return (rowsupdated >= 0) ? SaveStatus.Normal : SaveStatus.ErrorOccured;
     }
 }
