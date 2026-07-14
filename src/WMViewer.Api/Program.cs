@@ -1,5 +1,6 @@
 using FluentMigrator.Runner;
 using Npgsql;
+using VMViewer.Metrics;
 using VMViewer.Migrations;
 using VMViewer.Repository;
 using VMViewer.Service;
@@ -37,6 +38,7 @@ public abstract class Program
     builder.Services.AddSingleton<ITeamService, TeamService>();
     builder.Services.AddSingleton<ITeamRepository, TeamRepository>();
     builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
+    builder.Services.AddSingleton<IRequestCounterMetric, RequestCounterMetric>();
 
     builder.Services.AddFluentMigratorCore().ConfigureRunner(rb => rb
       .AddPostgres()

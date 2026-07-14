@@ -1,16 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
+using VMViewer.Metrics;
 using VMViewer.Service;
 
 namespace VMViewer.Controllers;
 
 [ApiController]
 [Route("player")]
-public class PlayerController(IPlayerService playerService, ILogger<PlayerController> logger) : ControllerBase
+public class PlayerController(IPlayerService playerService, ILogger<PlayerController> logger, IRequestCounterMetric metric) : ControllerBase
 {
     [HttpGet]
     [Route("{id:int}")]
     public IActionResult GetPlayer(int id)
     {
+        metric.Increase();
         var (player, status) = playerService.GetPlayer(id);
 
         return status switch
@@ -26,6 +28,7 @@ public class PlayerController(IPlayerService playerService, ILogger<PlayerContro
     [Route("")]
     public IActionResult AddPlayer([FromBody] CreateRequest request)
     {
+        metric.Increase();
         var (player, status) = playerService.AddPlayer(request.Name, request.Age, request.TeamId);
         switch (status)
         {
@@ -47,6 +50,7 @@ public class PlayerController(IPlayerService playerService, ILogger<PlayerContro
     [Route("{Id:int}")]
     public IActionResult DeletePlayer(int Id)
     {
+        metric.Increase();
         var res = playerService.DeletePlayer(Id);
 
          switch (res)
