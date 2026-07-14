@@ -16,7 +16,6 @@ public abstract class Program
     var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__postgres");
     if (connectionString == null)
     {
-      Console.WriteLine("Connection String null");
       Environment.Exit(1);
     }
     Console.WriteLine(connectionString);

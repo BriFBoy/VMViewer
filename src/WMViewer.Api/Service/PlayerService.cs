@@ -1,9 +1,11 @@
-﻿using VMViewer.Model;
+﻿using Npgsql;
+using VMViewer.Model;
 using VMViewer.Repository;
 
 namespace VMViewer.Service;
 
-public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository) : IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, ITeamRepository teamRepository, ILogger<PlayerService> logger)
+    : IPlayerService
 {
     public (Player?, ServiceStatus) GetPlayer(int id)
     {
@@ -15,28 +17,35 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
 
     public (Player?, ServiceStatus) AddPlayer(string name, int age, int teamid)
     {
-        if (!teamRepository.DoTeamExistsWithId(teamid)) return (null, ServiceStatus.Invaild);
-        if (playerRepository.DoPlayerExistsWithName(name)) return (null, ServiceStatus.Exists);
-
-        var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
-        if (getstatus != SaveStatus.Normal && getstatus != SaveStatus.NoEntries) return (null, ServiceStatus.Error);
-
-        if (players is not null)
+        try
         {
-            if (players.Count >= Team.MAXSQUADSIZE) return (null, ServiceStatus.TooMany);
+            if (!teamRepository.DoTeamExistsWithId(teamid)) return (null, ServiceStatus.Invaild);
+            if (playerRepository.DoPlayerExistsWithName(name)) return (null, ServiceStatus.Exists);
+
+            var (players, getstatus) = playerRepository.GetAllPlayersInSquad(teamid);
+            if (getstatus != SaveStatus.Normal && getstatus != SaveStatus.NoEntries) return (null, ServiceStatus.Error);
+
+            if (players is not null)
+            {
+                if (players.Count >= Team.MAXSQUADSIZE) return (null, ServiceStatus.TooMany);
+            }
+
+
+            var newPlayer = new Player(null, name, age, teamid, false);
+            var (player, status) = playerRepository.AddPlayer(newPlayer);
+            return status switch
+            {
+                SaveStatus.AlreadyExists => (null, ServiceStatus.Exists),
+                SaveStatus.ErrorOccured => (null, ServiceStatus.Error),
+                SaveStatus.Created => (player, ServiceStatus.Normal),
+                _ => (null, ServiceStatus.Error)
+            };
         }
-
-
-        var newPlayer = new Player(null, name, age, teamid, false);
-        var (player, status) = playerRepository.AddPlayer(newPlayer);
-
-        return status switch
+        catch (NpgsqlException e)
         {
-            SaveStatus.AlreadyExists => (null, ServiceStatus.Exists),
-            SaveStatus.ErrorOccured => (null, ServiceStatus.Error),
-            SaveStatus.Created => (player, ServiceStatus.Normal),
-            _ => (null, ServiceStatus.Error)
-        };
+            logger.LogError("Database failed when saving player");
+            return (null, ServiceStatus.Error);
+        }
     }
 
     public ServiceStatus DeletePlayer(int playerid)
