@@ -23,7 +23,7 @@ public class PlayerController(IPlayerService playerService, ILogger<PlayerContro
     }
 
     [HttpPost]
-    [Route("addplayer")]
+    [Route("")]
     public IActionResult AddPlayer([FromBody] CreateRequest request)
     {
         var (player, status) = playerService.AddPlayer(request.Name, request.Age, request.TeamId);
@@ -44,7 +44,7 @@ public class PlayerController(IPlayerService playerService, ILogger<PlayerContro
     }
 
     [HttpDelete]
-    [Route("deleteplayer/{Id:int}")]
+    [Route("{Id:int}")]
     public IActionResult DeletePlayer(int Id)
     {
         var res = playerService.DeletePlayer(Id);

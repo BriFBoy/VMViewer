@@ -15,7 +15,7 @@ public class TeamController(ITeamService teamService, ILogger<TeamController> lo
         return team is not null ? Ok(team) : NoContent();
     }
 
-    [Route("addteam")]
+    [Route("")]
     [HttpPost]
     public ActionResult<Team> AddTeam(TeamRequest request)
     {
@@ -33,7 +33,7 @@ public class TeamController(ITeamService teamService, ILogger<TeamController> lo
     }
 
     [HttpDelete]
-    [Route("deleteteam/{Id:int}")]
+    [Route("{Id:int}")]
     public IActionResult DeleteTeam(int Id)
     {
         switch (teamService.DeleteTeam(Id))
@@ -48,15 +48,15 @@ public class TeamController(ITeamService teamService, ILogger<TeamController> lo
     }
 
     [HttpPut]
-    [Route("makecaptain/{teamid:int}/{playerid:int}")]
-    public IActionResult MakeCaptain(int teamid, int playerid)
+    [Route("captain")]
+    public IActionResult MakeCaptain([FromBody] CaptainRequest request)
     {
-        var (player, status) = teamService.MakeCaptain(teamid, playerid);
-        switch (status)
+        var (player, status) = teamService.MakeCaptain(request.TeamId, request.PlayerId);
+        return status switch
         {
-            case ServiceStatus.Normal: return Ok(player);
-            default: return Problem();
-        }
+            ServiceStatus.Normal => Ok(player),
+            _ => Problem()
+        };
     }
 }
 
@@ -64,4 +64,10 @@ public class TeamRequest
 {
     public int? Id { get; set; }
     public string? Name { get; set; }
+}
+
+public class CaptainRequest(int teamId, int playerId)
+{
+    public readonly int TeamId = teamId;
+    public readonly int PlayerId = playerId;
 }

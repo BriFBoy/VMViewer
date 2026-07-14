@@ -22,14 +22,14 @@ public class SquadController(ISquadService squadService, ILogger<SquadController
     }
 
     [HttpPut]
-    [Route("transfer/{playerid:int}/{teamid:int}")]
-    public IActionResult TransferPlayer(int playerid, int teamid)
+    [Route("transfer")]
+    public IActionResult TransferPlayer([FromBody] Transfer requset)
     {
-        var (player, status) = squadService.Transfer(playerid, teamid);
+        var (player, status) = squadService.Transfer(requset.PlayerId, requset.TeamId);
         switch (status)
         {
             case ServiceStatus.Normal:
-                logger.LogInformation("Transfered player with id {playerid} to team with id {teamid}", playerid, teamid);
+                logger.LogInformation("Transfered player with id {playerid} to team with id {teamid}", requset.PlayerId, requset.TeamId);
                 return Ok(player);
             case ServiceStatus.NotFound:
                 return NoContent();
@@ -38,4 +38,10 @@ public class SquadController(ISquadService squadService, ILogger<SquadController
             default: return Problem();
         }
     }
+}
+
+public class Transfer(int playerId, int teamId)
+{
+    public readonly int PlayerId = playerId;
+    public readonly int TeamId = teamId;
 }
