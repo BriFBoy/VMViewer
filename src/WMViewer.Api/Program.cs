@@ -19,7 +19,6 @@ public abstract class Program
     {
       Environment.Exit(1);
     }
-    Console.WriteLine(connectionString);
     ConnectionString = connectionString;
 
   }
@@ -30,6 +29,7 @@ public abstract class Program
 
     var builder = WebApplication.CreateBuilder(args);
     builder.AddServiceDefaults();
+
 
     builder.Services.AddControllers();
     builder.Services.AddTransient(_ => new NpgsqlConnection(ConnectionString));

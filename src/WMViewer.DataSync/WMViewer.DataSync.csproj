@@ -5,6 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>33d02fe7-b76b-41c7-8dbf-8a343c292663</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,13 @@
 
   <ItemGroup>
     <ProjectReference Include="../WMViewer.ServiceDefaults/WMViewer.ServiceDefaults.csproj" />
+    <ProjectReference Include="../Shared/Shared.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
