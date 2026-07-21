@@ -66,8 +66,8 @@ public class TeamRequest
     public string? Name { get; set; }
 }
 
-public class CaptainRequest(int teamId, int playerId)
+public class CaptainRequest(int playerId, int teamId)
 {
-    public readonly int TeamId = teamId;
-    public readonly int PlayerId = playerId;
+    public int TeamId { get; } = teamId;
+    public int PlayerId { get;  } = playerId;
 }

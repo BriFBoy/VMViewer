@@ -17,16 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="DotNetEnv" Version="3.2.0" />
     <PackageReference Include="FluentMigrator" Version="8.0.1" />
     <PackageReference Include="FluentMigrator.Runner" Version="8.0.1" />
     <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
   </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="../WMViewer.ServiceDefaults/WMViewer.ServiceDefaults.csproj"/>
+    <ProjectReference Include="../Shared/Shared.csproj"/>
   </ItemGroup>
 
 </Project>
