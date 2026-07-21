@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using VMViewer.Model;
+using Shared.Model;
 using VMViewer.Service;
 
 namespace VMViewer.Controllers;

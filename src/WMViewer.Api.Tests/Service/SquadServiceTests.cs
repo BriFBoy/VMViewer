@@ -1,6 +1,6 @@
 ﻿using NSubstitute;
 using NUnit.Framework;
-using VMViewer.Model;
+using Shared.Model;
 using VMViewer.Repository;
 using VMViewer.Service;
 

@@ -1,5 +1,5 @@
 ﻿using Npgsql;
-using VMViewer.Model;
+using Shared.Model;
 using VMViewer.Repository;
 
 namespace VMViewer.Service;

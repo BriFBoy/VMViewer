@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NUnit.Framework;
+using Shared.Model;
 using VMViewer.Controllers;
 using VMViewer.Metrics;
-using VMViewer.Model;
 using VMViewer.Service;
 
 namespace WMViewer.Api.Tests.Controllers;

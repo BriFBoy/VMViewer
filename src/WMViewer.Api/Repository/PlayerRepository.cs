@@ -1,6 +1,6 @@
 using Dapper;
 using Npgsql;
-using VMViewer.Model;
+using Shared.Model;
 
 namespace VMViewer.Repository;
 

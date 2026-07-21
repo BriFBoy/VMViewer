@@ -1,4 +1,4 @@
-﻿using VMViewer.Model;
+﻿using Shared.Model;
 
 namespace VMViewer.Service;
 

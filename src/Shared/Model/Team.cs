@@ -1,4 +1,4 @@
-namespace VMViewer.Model;
+namespace Shared.Model;
 
 public class Team(int? teamid, string name, int numberofplayers, int? captain)
 {
