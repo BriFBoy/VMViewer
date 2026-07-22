@@ -2,7 +2,7 @@ using FluentMigrator;
 
 namespace VMViewer.Migrations;
 
-[Migration(20260629, description: "Create Players and Teams tables")]
+[Migration(20260629001, description: "Create Players and Teams tables")]
 public class CreateTables : Migration
 {
   public override void Up()

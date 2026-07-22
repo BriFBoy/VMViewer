@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Shared.Model;
-using WMViewer.DataSync.Migrations;
 using WMViewer.DataSync.Reader;
 using WMViewer.DataSync.Repository;
 using WMViewer.DataSync.Validation;
@@ -28,12 +27,6 @@ internal abstract class Program
         builder.Services.AddSingleton<IDbConnection>(connection);
         builder.Services.AddSingleton<PlayerRepository>();
         builder.Services.AddSingleton<Validator>();
-        builder.Services.AddFluentMigratorCore().ConfigureRunner(r =>
-        {
-            r.AddPostgres();
-            r.WithGlobalConnectionString(builder.Configuration["connection__string"]);
-            r.ScanIn(typeof(Table_20260721).Assembly).For.All();
-        }).AddLogging(l => l.AddFluentMigratorConsole());
         
         var csvPath = builder.Configuration["DataSync:CsvPath"];
         if (csvPath.IsNullOrEmpty())
