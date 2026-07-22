@@ -18,6 +18,9 @@ public record PlayerMap
     public int? PlayerId { get; set; }
     [Ignore]
     public bool IsCaptain { get; set; } = false;
+    
+    [Name("fifa_update_date")]
+    public DateTimeOffset LastUpdate { get; set; }
 
 
 

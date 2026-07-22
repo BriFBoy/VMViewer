@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using CsvHelper.Configuration;
 using FluentMigrator.Runner;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -20,62 +21,110 @@ internal abstract class Program
 {
     private static void Main()
     {
-        var builder = Host.CreateApplicationBuilder();
-        var connection = new NpgsqlConnection(builder.Configuration["connection__string"]);
-        
-        
-        builder.Services.AddSingleton<TeamRepository>();
-        builder.Services.AddSingleton<IDbConnection>(connection);
-        builder.Services.AddSingleton<PlayerRepository>();
-        builder.Services.AddSingleton<Validator>();
-        builder.Services.AddFluentMigratorCore().ConfigureRunner(r =>
+        try
         {
-            r.AddPostgres();
-            r.WithGlobalConnectionString(builder.Configuration["connection__string"]);
-            r.ScanIn(typeof(Table_20260721).Assembly).For.All();
-        }).AddLogging(l => l.AddFluentMigratorConsole());
-        
-        var csvPath = builder.Configuration["DataSync:CsvPath"];
-        if (csvPath.IsNullOrEmpty())
-        {
-            throw new ArgumentNullException();
-        }
-        var app = builder.Build();
+            Console.WriteLine("starting");
+            var builder = Host.CreateApplicationBuilder();
+            var connectionString = builder.Configuration.GetConnectionString("postgres")
+                                   ?? throw new InvalidOperationException("Missing connection string 'postgres'.");
+            var connection = new NpgsqlConnection(connectionString);
+            builder.AddServiceDefaults();
 
-        using (var scope = app.Services.CreateScope())
-        {
-            scope.ServiceProvider.GetRequiredService<IMigrationRunner>().MigrateUp();
-        }
-        var csvHelperConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            PrepareHeaderForMatch = args => args.Header.ToLower()
-        };
-        var validator = app.Services.GetService<Validator>();
-        var playerRepository = app.Services.GetService<PlayerRepository>();
-        if (validator == null || playerRepository == null)
-        {
-            throw new NullReferenceException("Unable to get classes class");
 
-        }
-        
-        RunSync(csvPath, csvHelperConfig, validator, playerRepository);
+            builder.Services.AddSingleton<TeamRepository>();
+            builder.Services.AddSingleton<IDbConnection>(connection);
+            builder.Services.AddSingleton<PlayerRepository>();
+            builder.Services.AddSingleton<Validator>();
+            builder.Services.AddFluentMigratorCore().ConfigureRunner(r =>
+            {
+                r.AddPostgres();
+                r.WithGlobalConnectionString(connectionString);
+                r.ScanIn(typeof(Table_20260721).Assembly).For.All();
+            }).AddLogging(l => l.AddFluentMigratorConsole());
 
+            var csvPath = builder.Configuration["DataSync:CsvPath"];
+            if (csvPath.IsNullOrEmpty())
+            {
+                throw new ArgumentNullException();
+            }
+
+            using var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                scope.ServiceProvider.GetRequiredService<IMigrationRunner>().MigrateUp();
+            }
+
+            var csvHelperConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                PrepareHeaderForMatch = args => args.Header.ToLower()
+            };
+            var validator = app.Services.GetService<Validator>();
+            var playerRepository = app.Services.GetService<PlayerRepository>();
+            var teamRepository = app.Services.GetService<TeamRepository>();
+            var syncConnection = app.Services.GetService<IDbConnection>();
+            if (validator == null || playerRepository == null || teamRepository == null || syncConnection == null)
+            {
+                throw new NullReferenceException("Unable to get classes class");
+            }
+
+            RunSync(csvPath, csvHelperConfig, validator, playerRepository, teamRepository, syncConnection);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error: " + e);
+            throw;
+        }
     }
 
-    private static void RunSync(string? csvPath, CsvConfiguration csvHelperConfig, Validator validator, PlayerRepository playerRepository)
+    private static void RunSync(string? csvPath, CsvConfiguration csvHelperConfig,
+        Validator validator, PlayerRepository playerRepository,
+        TeamRepository teamRepository, IDbConnection connection)
     {
         using var reader = new StreamReader(csvPath!);
         using var csv = new CsvReader(reader, csvHelperConfig);
-        
+
         using var records = csv.GetRecords<PlayerMap>().GetEnumerator();
-        while (records.MoveNext())
+        Console.WriteLine("[datasync] opening connection");
+        connection.Open();
+        Console.WriteLine("[datasync] connection open, beginning transaction");
+        using (var transaction = connection.BeginTransaction())
         {
-            var player = validator.CreatePlayer(records.Current);
-            if (player == null)
+            try
             {
-                break;
+                var rowCount = 0;
+                while (records.MoveNext())
+                {
+                    Console.WriteLine($"[datasync] processing row {++rowCount}");
+                    if (records.Current.TeamName.IsNullOrEmpty())
+                    {
+                        continue;
+                    }
+
+                    var (player, team) = validator.CreateValidPlayerAndTeam(records.Current);
+                    if (player == null)
+                    {
+                        break;
+                    }
+
+                    if (team != null)
+                    {
+                        teamRepository.UpdateTeam(team);
+                    }
+
+                    playerRepository.AddPlayer(player);
+                }
+
+                Console.WriteLine("[datasync] committing transaction");
+                transaction.Commit();
             }
-            playerRepository.AddPlayer(player);
+            catch (Exception e)
+            {
+                transaction.Rollback();
+                Console.WriteLine(e);
+                throw;
+            }
         }
+
+        connection.Close();
     }
 }

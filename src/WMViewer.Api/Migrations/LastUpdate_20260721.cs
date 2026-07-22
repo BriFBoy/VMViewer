@@ -7,11 +7,11 @@ public class LastUpdate_20260721: Migration
 {
     public override void Up()
     {
-        Alter.Table("player").AddColumn("last_update").AsDateTimeOffset().Nullable();
+        Alter.Table("players").AddColumn("last_update").AsDateTimeOffset().Nullable();
     }
 
     public override void Down()
     {
-        Delete.Column("last_update").FromTable("player");
+        Delete.Column("last_update").FromTable("players");
     }
 }

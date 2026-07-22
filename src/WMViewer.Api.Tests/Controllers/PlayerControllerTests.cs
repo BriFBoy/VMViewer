@@ -10,7 +10,6 @@ using VMViewer.Service;
 
 namespace WMViewer.Api.Tests.Controllers;
 
-
 public class PlayerControllerTests
 {
     private ILogger<PlayerController> _logger;
@@ -20,15 +19,15 @@ public class PlayerControllerTests
     [SetUp]
     public void SetUp()
     {
-       _playerService = Substitute.For<IPlayerService>();
-       _logger =   Substitute.For<ILogger<PlayerController>>();
-       _metric = Substitute.For<IRequestCounterMetric>();
+        _playerService = Substitute.For<IPlayerService>();
+        _logger = Substitute.For<ILogger<PlayerController>>();
+        _metric = Substitute.For<IRequestCounterMetric>();
     }
-    
+
     [Test]
     public void AddPlayerTest_WithInvalidTeamId_ReturnsBadRequest()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 0, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 0, DateTime.Now, false);
         _playerService.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Invaild));
         var playerController = new PlayerController(_playerService, _logger, _metric);
         var request = new PlayerController.CreateRequest(player.Age, player.Name, player.TeamId);
@@ -37,11 +36,11 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<BadRequestObjectResult>(actionResult);
     }
-    
+
     [Test]
     public void AddPlayerTest_WithValidPlayer_ReturnsCreatedInAction()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, DateTime.Now, false);
         _playerService.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Normal));
         var playerController = new PlayerController(_playerService, _logger, _metric);
         var request = new PlayerController.CreateRequest(player.Age, player.Name, player.TeamId);
@@ -51,10 +50,11 @@ public class PlayerControllerTests
         Assert.IsInstanceOf<CreatedAtActionResult>(actionResult);
         Assert.AreEqual(((CreatedAtActionResult)actionResult).Value, player);
     }
+
     [Test]
     public void AddPlayerTest_WithExistingPlayer_ReturnsConflict()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, DateTime.Now, false);
         _playerService.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.Exists));
         var playerController = new PlayerController(_playerService, _logger, _metric);
         var request = new PlayerController.CreateRequest(player.Age, player.Name, player.TeamId);
@@ -63,10 +63,11 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<ConflictObjectResult>(actionResult);
     }
+
     [Test]
     public void AddPlayerTest_WithFullSquad_ReturnsConflict()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, DateTime.Now, false);
         _playerService.AddPlayer(player.Name, player.Age, player.TeamId).Returns((player, ServiceStatus.TooMany));
         var playerController = new PlayerController(_playerService, _logger, _metric);
         var request = new PlayerController.CreateRequest(player.Age, player.Name, player.TeamId);
@@ -75,7 +76,7 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<ConflictObjectResult>(actionResult);
     }
-    
+
     [Test]
     public void DeletePlayer_WithInvalidId_ReturnsNotFound()
     {
@@ -88,6 +89,7 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<NotFoundResult>(actionResult);
     }
+
     [Test]
     public void DeletePlayer_WithValidId_ReturnsOk()
     {
@@ -100,10 +102,11 @@ public class PlayerControllerTests
 
         Assert.IsInstanceOf<OkResult>(actionResult);
     }
+
     [Test]
     public void GetPlayer_WithValidId_ReturnsOk()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, DateTime.Now, false);
         _playerService.GetPlayer((int)player.PlayerId!).Returns((player, ServiceStatus.Normal));
         var playerController = new PlayerController(_playerService, _logger, _metric);
 
@@ -113,10 +116,11 @@ public class PlayerControllerTests
         Assert.IsInstanceOf<OkObjectResult>(actionResult);
         Assert.AreEqual(((OkObjectResult)actionResult).Value, player);
     }
+
     [Test]
     public void GetPlayer_WithInvalidId_ReturnsBadRequest()
     {
-        var player = new Player(1, "Martin Ødegaard", 25, 1, false);
+        var player = new Player(1, "Martin Ødegaard", 25, 1, DateTime.Now, false);
         _playerService.GetPlayer((int)player.PlayerId!).Returns((player, ServiceStatus.Invaild));
         var playerController = new PlayerController(_playerService, _logger, _metric);
 
