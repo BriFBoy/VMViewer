@@ -1,15 +1,13 @@
 ﻿using System.Data;
 using System.Globalization;
-using System.Text.Json;
 using CsvHelper.Configuration;
 using FluentMigrator.Runner;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
-using Shared.Model;
-using WMViewer.DataSync.Migrations;
 using WMViewer.DataSync.Reader;
 using WMViewer.DataSync.Repository;
 using WMViewer.DataSync.Validation;
@@ -23,24 +21,23 @@ internal abstract class Program
     {
         try
         {
-            Console.WriteLine("starting");
+
             var builder = Host.CreateApplicationBuilder();
-            var connectionString = builder.Configuration.GetConnectionString("postgres")
-                                   ?? throw new InvalidOperationException("Missing connection string 'postgres'.");
+            var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__wmviewer");
+            if (connectionString.IsNullOrEmpty())
+            {
+                throw new ArgumentNullException();
+            }
+                                  
             var connection = new NpgsqlConnection(connectionString);
-            builder.AddServiceDefaults();
+            builder.ConfigureOpenTelemetry();
 
 
             builder.Services.AddSingleton<TeamRepository>();
             builder.Services.AddSingleton<IDbConnection>(connection);
             builder.Services.AddSingleton<PlayerRepository>();
             builder.Services.AddSingleton<Validator>();
-            builder.Services.AddFluentMigratorCore().ConfigureRunner(r =>
-            {
-                r.AddPostgres();
-                r.WithGlobalConnectionString(connectionString);
-                r.ScanIn(typeof(Table_20260721).Assembly).For.All();
-            }).AddLogging(l => l.AddFluentMigratorConsole());
+
 
             var csvPath = builder.Configuration["DataSync:CsvPath"];
             if (csvPath.IsNullOrEmpty())
@@ -49,10 +46,6 @@ internal abstract class Program
             }
 
             using var app = builder.Build();
-            using (var scope = app.Services.CreateScope())
-            {
-                scope.ServiceProvider.GetRequiredService<IMigrationRunner>().MigrateUp();
-            }
 
             var csvHelperConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
             {

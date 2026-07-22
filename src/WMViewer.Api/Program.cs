@@ -14,7 +14,7 @@ public abstract class Program
   static Program()
   {
     DotNetEnv.Env.Load();
-    var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__postgres");
+    var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__wmviewer");
     if (connectionString == null)
     {
       Environment.Exit(1);

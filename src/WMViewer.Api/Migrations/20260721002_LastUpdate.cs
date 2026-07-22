@@ -2,8 +2,8 @@
 
 namespace VMViewer.Migrations;
 
-[Migration(20260721, description:"last update colum to know when to update player")]
-public class LastUpdate_20260721: Migration
+[Migration(20260721002, description:"last update colum to know when to update player")]
+public class LastUpdate: Migration
 {
     public override void Up()
     {

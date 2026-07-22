@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Shared.Model;
 using WMViewer.DataSync.Reader;
@@ -6,10 +7,11 @@ using WMViewer.DataSync.Repository;
 
 namespace WMViewer.DataSync.Validation;
 
-public class Validator(TeamRepository teamRepository)
+public class Validator(TeamRepository teamRepository, ILogger<Validator> logger)
 {
     public (Player?, Team?) CreateValidPlayerAndTeam(PlayerMap mapper)
     {
+        logger.LogInformation("Validating PlayerMap");
         if (!teamRepository.DoTeamExistsWithName(mapper.TeamName))
         {
             var team = new Team(null, mapper.TeamName, 1, null);

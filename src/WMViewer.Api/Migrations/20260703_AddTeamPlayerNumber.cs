@@ -3,7 +3,7 @@
 namespace VMViewer.Migrations;
 
 [Migration(20260703,description: "Add NumberOfPlayers to Table")]
-public class AddTeamPlayerNumber_20260703: Migration {
+public class AddTeamPlayerNumber: Migration {
     public override void Up()
     {
         Alter.Table("teams").AddColumn("numberofplayers").AsInt32().NotNullable().WithDefaultValue(0);
