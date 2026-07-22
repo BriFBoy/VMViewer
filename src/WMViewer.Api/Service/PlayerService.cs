@@ -31,7 +31,7 @@ public class PlayerService(IPlayerRepository playerRepository, ITeamRepository t
             }
 
 
-            var newPlayer = new Player(null, name, age, teamid, false);
+            var newPlayer = new Player(null, name, age, teamid, DateTime.Now, false );
             var (player, status) = playerRepository.AddPlayer(newPlayer);
             return status switch
             {

@@ -17,6 +17,22 @@ public class TeamRepository(IDbConnection connection)
         return connection.QuerySingle<bool>("SELECT EXISTS(SELECT 1 FROM teams WHERE name=@Name)", new { Name = name });
     }
 
+    public int? UpdateTeam(Team team)
+    {
+        try
+        {
+            var result = connection
+                .QuerySingleAsync<Team>(
+                    "UPDATE teams SET name=@Name, numberofplayers=@NumberOfPlayers WHERE teamid = @TeamId RETURNING *",
+                    new { team.Name, team.NumberOfPlayers, team.TeamId }).Result;
+            return result.TeamId;
+        }
+        catch (AggregateException e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
+    }
     public int? SaveTeam(Team team)
     {
         try

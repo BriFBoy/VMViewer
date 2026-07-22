@@ -1,8 +1,8 @@
 ﻿using FluentMigrator;
 
 namespace WMViewer.DataSync.Migrations;
-[Migration(20260721, description:"Creating table for sync checkmarks")]
-public class Table_20260721: Migration
+[Migration(20260721001, description:"Creating table for sync checkmarks")]
+public class Table: Migration
 {
     public override void Up()
     {
