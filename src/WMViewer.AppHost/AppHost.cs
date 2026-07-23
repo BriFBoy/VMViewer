@@ -3,6 +3,7 @@ using Projects;
 var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder.AddPostgres("postgres")
+    .WithHostPort(5000)
     .WithLifetime(ContainerLifetime.Persistent);
 
 var database = postgres.AddDatabase("wmviewer");

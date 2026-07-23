@@ -7,7 +7,7 @@ public class Table: Migration
     public override void Up()
     {
         Create.Table("datasync")
-            .WithColumn("data_sync_name").AsString(200).PrimaryKey()
+            .WithColumn("datasync_id").AsInt32().PrimaryKey().Identity()
             .WithColumn("csv_name").AsString(100)
             .WithColumn("date_of_sync").AsDateTimeOffset().NotNullable().WithDefaultValue(SystemMethods.CurrentDateTime)
             .WithColumn("last_update").AsDateTimeOffset().NotNullable()
