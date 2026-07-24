@@ -1,18 +1,15 @@
 ﻿using System.Data;
 using System.Globalization;
 using CsvHelper.Configuration;
-using FluentMigrator.Runner;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Npgsql;
+using WMViewer.DataSync.Metrics;
 using WMViewer.DataSync.Reader;
 using WMViewer.DataSync.Repository;
 using WMViewer.DataSync.Runner;
 using WMViewer.DataSync.Validation;
-using CsvReader = CsvHelper.CsvReader;
+
 
 namespace WMViewer.DataSync;
 
@@ -24,7 +21,7 @@ internal abstract class Program
         {
             var builder = Host.CreateApplicationBuilder();
             var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__wmviewer");
-            if (connectionString.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentNullException();
             }
@@ -35,7 +32,7 @@ internal abstract class Program
             };
 
             var connection = new NpgsqlConnection(connectionString);
-            builder.ConfigureOpenTelemetry();
+            builder.AddServiceDefaults();
 
 
             builder.Services.AddSingleton<TeamRepository>();
@@ -45,11 +42,13 @@ internal abstract class Program
             builder.Services.AddSingleton<Processor>();
             builder.Services.AddSingleton<SyncRunner>();
             builder.Services.AddSingleton<DatasyncRepository>();
+            builder.Services.AddSingleton<AffectedRowsMetric>();
+            builder.Services.AddSingleton<CsvRecordReader>();
             builder.Services.AddSingleton(csvHelperConfig);
 
 
             var csvPath = builder.Configuration["DataSync:CsvPath"];
-            if (csvPath.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(csvPath))
             {
                 throw new ArgumentNullException();
             }
@@ -57,6 +56,7 @@ internal abstract class Program
             using var app = builder.Build();
 
             var syncRunner = app.Services.GetService<SyncRunner>() ?? throw new ArgumentNullException();
+            app.Start();
             syncRunner.RunSync(csvPath);
             
         }

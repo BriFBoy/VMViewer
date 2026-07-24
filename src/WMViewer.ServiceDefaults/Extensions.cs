@@ -58,7 +58,8 @@ public static class Extensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddMeter("wmviewer.api");
+                    .AddMeter("wmviewer.api")
+                    .AddMeter("wmviewer.dataSync");
             })
             .WithTracing(tracing =>
             {

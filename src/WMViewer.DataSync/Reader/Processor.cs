@@ -1,46 +1,75 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
+using WMViewer.DataSync.Metrics;
 using WMViewer.DataSync.Repository;
 using WMViewer.DataSync.Validation;
 
 namespace WMViewer.DataSync.Reader;
 
-public class Processor(TeamRepository teamRepository, PlayerRepository playerRepository, Validator validator, ILogger<Processor> logger)
+public class Processor(TeamRepository teamRepository, PlayerRepository playerRepository, 
+    Validator validator, ILogger<Processor> logger, AffectedRowsMetric metrics, 
+    DatasyncRepository datasyncRepository, CsvRecordReader csvRecordReader)
 {
 
     private TeamRepository _teamRepository = teamRepository;
     private PlayerRepository _playerRepository = playerRepository;
     private Validator _validator = validator;
+    private AffectedRowsMetric _metrics = metrics;
+    private DatasyncRepository _datasyncRepository = datasyncRepository;
+    private CsvRecordReader _csvRecordReader = csvRecordReader;
 
-    public int ProcessRecord(PlayerMap playerMap)
+    public void ProcessRecord(PlayerMap playerMap)
     {
-        var numberOfUpdates = 0;
 
 
-        if (playerMap.TeamName.IsNullOrEmpty())
+        if (string.IsNullOrEmpty(playerMap.TeamName))
         {
-            return 0;
+            return;
         }
 
-        var (player, team, affected) = _validator.CreateValidPlayerAndTeam(playerMap);
+        var (player, team) = _validator.CreateValidPlayerAndTeam(playerMap);
         if (player == null)
         {
-            return 0;
+            return;
         }
-
-        numberOfUpdates += affected;
-
+        
         if (team != null)
         {
-            numberOfUpdates += _teamRepository.UpdateTeam(team);
+            _teamRepository.UpdateTeam(team);
+            _metrics.IncreaseTeamsmetric();
             logger.LogInformation("Updated Team, -> {TeamId}, {Name}, {NumberOfPlayers}", 
-                team.TeamId, team.TeamId, team.NumberOfPlayers);
+                team.TeamId, team.Name, team.NumberOfPlayers);
         }
 
-        numberOfUpdates += _playerRepository.AddPlayer(player);
+        _playerRepository.AddPlayer(player);
+        _metrics.IncreasePlayersmetric();
         logger.LogInformation("Updated Player, -> {PlayerId}, {Name}, {Age}, {Iscaptain}, {LastUpdate}, {TeamID}", 
             player.PlayerId, player.Name, player.Age, player.IsCaptain, player.LastUpdate, player.TeamId);
-        
-        return numberOfUpdates;
+    }
+    
+    public DateTime? RecordLooper(string csvPath)
+    {
+        var currentLatest = _datasyncRepository.GetLatestUpdateTime();
+        DateTime? lastUpdate = null;
+
+        foreach (var record in _csvRecordReader.GetRecords(csvPath))
+        {
+            if (currentLatest != null && currentLatest >= record.LastUpdate)
+            {
+                _metrics.IncreaseSkippedsmetric();
+                continue;
+            }
+
+            if (lastUpdate == null || lastUpdate < record.LastUpdate)
+            {
+                lastUpdate = record.LastUpdate;
+            }
+
+
+            ProcessRecord(record);
+        }
+
+
+        lastUpdate ??= currentLatest;
+        return lastUpdate;
     }
 }
