@@ -34,6 +34,10 @@ public class SyncRunner
             try
             {
                 var lastUpdate = _processor.RecordLooper(csvPath);
+                if (lastUpdate == null)
+                {
+                    throw new ArgumentNullException("lastUpdate");
+                }
 
                 var syncoperation = new SyncOperation(null, csvPath, DateTime.Now, lastUpdate.Value, "success", null);
 
